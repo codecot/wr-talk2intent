@@ -4,9 +4,10 @@ import { transcribeAudio } from '../lib/api';
 interface AudioInputProps {
   onTranscribed: (text: string) => void;
   disabled?: boolean;
+  projectId?: string;
 }
 
-export default function AudioInput({ onTranscribed, disabled }: AudioInputProps) {
+export default function AudioInput({ onTranscribed, disabled, projectId }: AudioInputProps) {
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +21,7 @@ export default function AudioInput({ onTranscribed, disabled }: AudioInputProps)
       setLoading(true);
       setError('');
       try {
-        const result = await transcribeAudio(file, file.name);
+        const result = await transcribeAudio(file, file.name, projectId || undefined);
         onTranscribed(result.text);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Transcription failed');
@@ -28,7 +29,7 @@ export default function AudioInput({ onTranscribed, disabled }: AudioInputProps)
         setLoading(false);
       }
     },
-    [onTranscribed],
+    [onTranscribed, projectId],
   );
 
   function handleUploadClick() {

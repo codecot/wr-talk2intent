@@ -6,4 +6,5 @@ export const config = {
   ollamaModel: process.env.OLLAMA_MODEL ?? 'llama3.2',
   dbPath: process.env.DB_PATH ?? './data/talk2intent.db',
   asrUrl: process.env.ASR_URL ?? 'http://localhost:8001',
+  vaultPath: process.env.VAULT_PATH ?? './data/vault',
 };

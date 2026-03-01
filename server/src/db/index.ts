@@ -18,6 +18,30 @@ export function initDb(): void {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS artifacts (
+      id TEXT PRIMARY KEY,
+      event_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  try {
+    db.exec(`ALTER TABLE events ADD COLUMN project_id TEXT DEFAULT ''`);
+  } catch {
+    // Column already exists — ignore
+  }
 }
 
 export function getDb(): Database.Database {

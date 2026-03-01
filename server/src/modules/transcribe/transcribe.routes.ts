@@ -17,7 +17,12 @@ export async function transcribeRoutes(app: FastifyInstance): Promise<void> {
 
     try {
       const buffer = await file.toBuffer();
-      const result = await transcribe(buffer, file.filename);
+      const projectId = file.fields?.projectId;
+      const resolvedProjectId =
+        projectId && typeof projectId === 'object' && 'value' in projectId
+          ? (projectId.value as string)
+          : undefined;
+      const result = await transcribe(buffer, file.filename, resolvedProjectId || undefined);
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Transcription failed';

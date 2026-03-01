@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { getPresets, transform, type Preset } from '../lib/api';
 import AudioInput from './AudioInput';
 
-export default function TransformPanel() {
+interface TransformPanelProps {
+  projectId?: string;
+}
+
+export default function TransformPanel({ projectId }: TransformPanelProps) {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState('');
   const [text, setText] = useState('');
@@ -26,7 +30,7 @@ export default function TransformPanel() {
     setError('');
     setOutput('');
     try {
-      const result = await transform(selectedPreset, text);
+      const result = await transform(selectedPreset, text, projectId || undefined);
       setOutput(result.output);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Transform failed');
@@ -66,7 +70,7 @@ export default function TransformPanel() {
           <label htmlFor="input-text" className="block text-sm font-medium text-gray-700">
             Input Text
           </label>
-          <AudioInput onTranscribed={(t) => setText(t)} disabled={loading} />
+          <AudioInput onTranscribed={(t) => setText(t)} disabled={loading} projectId={projectId} />
         </div>
         <textarea
           id="input-text"

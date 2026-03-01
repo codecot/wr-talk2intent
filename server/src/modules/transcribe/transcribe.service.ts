@@ -13,6 +13,7 @@ export interface TranscriptionResult {
 export async function transcribe(
   fileBuffer: Buffer,
   filename: string,
+  projectId?: string,
 ): Promise<TranscriptionResult> {
   const asr = await callAsr(fileBuffer, filename);
 
@@ -21,9 +22,9 @@ export async function transcribe(
 
   const db = getDb();
   db.prepare(
-    `INSERT INTO events (id, source, preset_id, raw_text, output, output_format, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, 'voice', '', asr.text, '', 'text', createdAt);
+    `INSERT INTO events (id, source, preset_id, raw_text, output, output_format, created_at, project_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, 'voice', '', asr.text, '', 'text', createdAt, projectId ?? '');
 
   return {
     id,

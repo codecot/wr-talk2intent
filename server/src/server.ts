@@ -6,6 +6,7 @@ import { initDb } from './db/index.js';
 import { presetsRoutes } from './modules/presets/presets.routes.js';
 import { transformRoutes } from './modules/transform/transform.routes.js';
 import { transcribeRoutes } from './modules/transcribe/transcribe.routes.js';
+import { projectsRoutes } from './modules/projects/projects.routes.js';
 
 const app = Fastify({
   logger: true,
@@ -17,6 +18,7 @@ await app.register(multipart, { limits: { fileSize: 50 * 1024 * 1024 } });
 await app.register(presetsRoutes);
 await app.register(transformRoutes);
 await app.register(transcribeRoutes);
+await app.register(projectsRoutes);
 
 initDb();
 
