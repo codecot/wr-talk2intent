@@ -70,6 +70,81 @@ export async function transcribeAudio(
   return res.json();
 }
 
+// --- RAG types ---
+
+export interface ReindexResult {
+  added: number;
+  updated: number;
+  removed: number;
+  skipped: number;
+  totalChunks: number;
+}
+
+export interface RagChunk {
+  content: string;
+  score: number;
+  filePath: string;
+  chunkIndex: number;
+}
+
+export interface QueryResult {
+  chunks: RagChunk[];
+}
+
+// --- RAG API functions ---
+
+export async function uploadProjectFile(
+  projectId: string,
+  file: File,
+  subfolder?: string,
+): Promise<{ relPath: string; sha256: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  if (subfolder) form.append('subfolder', subfolder);
+
+  const res = await fetch(`/api/projects/${projectId}/files`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+    throw new Error(err.error ?? 'Upload failed');
+  }
+  return res.json();
+}
+
+export async function reindexProject(
+  projectId: string,
+): Promise<ReindexResult> {
+  const res = await fetch(`/api/projects/${projectId}/reindex`, {
+    method: 'POST',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Reindex failed' }));
+    throw new Error(err.error ?? 'Reindex failed');
+  }
+  return res.json();
+}
+
+export async function ragQuery(
+  projectId: string,
+  query: string,
+  topK?: number,
+): Promise<QueryResult> {
+  const res = await fetch('/api/rag/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ projectId, query, ...(topK ? { topK } : {}) }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Query failed' }));
+    throw new Error(err.error ?? 'Query failed');
+  }
+  return res.json();
+}
+
+// --- Transform ---
+
 export async function transform(
   presetId: string,
   text: string,

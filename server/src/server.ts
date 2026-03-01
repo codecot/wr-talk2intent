@@ -7,6 +7,7 @@ import { presetsRoutes } from './modules/presets/presets.routes.js';
 import { transformRoutes } from './modules/transform/transform.routes.js';
 import { transcribeRoutes } from './modules/transcribe/transcribe.routes.js';
 import { projectsRoutes } from './modules/projects/projects.routes.js';
+import { ragRoutes } from './modules/rag/rag.routes.js';
 
 const app = Fastify({
   logger: true,
@@ -19,6 +20,7 @@ await app.register(presetsRoutes);
 await app.register(transformRoutes);
 await app.register(transcribeRoutes);
 await app.register(projectsRoutes);
+await app.register(ragRoutes);
 
 initDb();
 
