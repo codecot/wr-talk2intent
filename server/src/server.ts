@@ -1,9 +1,11 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import { config } from './config.js';
 import { initDb } from './db/index.js';
 import { presetsRoutes } from './modules/presets/presets.routes.js';
 import { transformRoutes } from './modules/transform/transform.routes.js';
+import { transcribeRoutes } from './modules/transcribe/transcribe.routes.js';
 
 const app = Fastify({
   logger: true,
@@ -11,8 +13,10 @@ const app = Fastify({
 });
 
 await app.register(cors, { origin: true });
+await app.register(multipart, { limits: { fileSize: 50 * 1024 * 1024 } });
 await app.register(presetsRoutes);
 await app.register(transformRoutes);
+await app.register(transcribeRoutes);
 
 initDb();
 

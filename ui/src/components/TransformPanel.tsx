@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getPresets, transform, type Preset } from '../lib/api';
+import AudioInput from './AudioInput';
 
 export default function TransformPanel() {
   const [presets, setPresets] = useState<Preset[]>([]);
@@ -61,15 +62,18 @@ export default function TransformPanel() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="input-text" className="block text-sm font-medium text-gray-700">
-          Input Text
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="input-text" className="block text-sm font-medium text-gray-700">
+            Input Text
+          </label>
+          <AudioInput onTranscribed={(t) => setText(t)} disabled={loading} />
+        </div>
         <textarea
           id="input-text"
           rows={8}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Paste your text here..."
+          placeholder="Paste your text here or use audio input..."
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>

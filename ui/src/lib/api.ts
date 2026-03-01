@@ -17,6 +17,32 @@ export async function getPresets(): Promise<Preset[]> {
   return res.json();
 }
 
+export interface TranscribeResult {
+  id: string;
+  text: string;
+  language: string;
+  duration: number;
+  createdAt: string;
+}
+
+export async function transcribeAudio(
+  file: Blob,
+  filename: string,
+): Promise<TranscribeResult> {
+  const form = new FormData();
+  form.append('file', file, filename);
+
+  const res = await fetch('/api/transcribe', {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Transcription failed' }));
+    throw new Error(err.error ?? 'Transcription failed');
+  }
+  return res.json();
+}
+
 export async function transform(
   presetId: string,
   text: string,
