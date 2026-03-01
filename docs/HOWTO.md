@@ -26,7 +26,8 @@ sudo apt install -y ffmpeg
 
 ```bash
 curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull llama3.2
+ollama pull llama3.2           # Text generation
+ollama pull nomic-embed-text   # Embeddings for RAG / semantic search
 ```
 
 ### NVIDIA / CUDA (for ASR GPU acceleration)
@@ -183,3 +184,124 @@ Response:
 
 - Make sure the Fastify server is running on `:3000`
 - The Vite dev proxy only works with `npm run dev`, not production builds
+
+---
+
+## 9. Project Spaces
+
+Projects organize all work into namespaces. Each project gets a vault directory.
+
+### Create a project
+
+In the UI, click the project selector in the header and create a new project. Or via API:
+
+```bash
+curl -X POST http://localhost:3000/api/projects \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My Project"}'
+```
+
+### Vault structure
+
+When a project is created, the vault directory is initialized:
+
+```
+data/vault/<project-id>/
+├── docs/       # Uploaded documents
+├── tasks/
+├── decisions/
+├── notes/      # Transform outputs saved here
+├── assets/
+└── context/
+```
+
+Transform outputs are automatically saved to `notes/` when a project is active.
+
+---
+
+## 10. File Upload and Indexing (RAG)
+
+### Upload a file
+
+Use the **Files & RAG** panel in the UI (appears when a project is selected), or via API:
+
+```bash
+curl -X POST http://localhost:3000/api/projects/<project-id>/files \
+  -F "file=@path/to/document.md"
+```
+
+Files are saved to the project vault under `docs/` by default. Use the `subfolder` field to target a different folder.
+
+### Reindex project files
+
+Scans all supported files (`.md`, `.txt`, `.json`, `.ts`, `.js`) in the project vault, chunks the text, generates embeddings via Ollama (nomic-embed-text), and stores everything in SQLite.
+
+```bash
+curl -X POST http://localhost:3000/api/projects/<project-id>/reindex
+```
+
+Response:
+
+```json
+{
+  "added": 3,
+  "updated": 0,
+  "removed": 0,
+  "skipped": 0,
+  "totalChunks": 12
+}
+```
+
+Reindexing is idempotent — unchanged files (same SHA-256 hash) are skipped. Modified files are re-chunked and re-embedded. Deleted files are cleaned up.
+
+### Semantic search
+
+Query indexed chunks using natural language:
+
+```bash
+curl -X POST http://localhost:3000/api/rag/query \
+  -H "Content-Type: application/json" \
+  -d '{"projectId":"<project-id>","query":"how does authentication work?","topK":5}'
+```
+
+Response:
+
+```json
+{
+  "chunks": [
+    {
+      "content": "chunk text...",
+      "score": 0.8523,
+      "filePath": "docs/auth.md",
+      "chunkIndex": 0
+    }
+  ]
+}
+```
+
+Chunks are ranked by cosine similarity against the query embedding. Higher scores indicate stronger semantic matches.
+
+### Configuration
+
+Chunking and embedding behavior can be tuned via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMBEDDING_MODEL` | `nomic-embed-text` | Ollama model for embeddings |
+| `CHUNK_SIZE` | `1500` | Target characters per chunk |
+| `CHUNK_OVERLAP` | `200` | Character overlap between adjacent chunks |
+
+---
+
+## 11. Troubleshooting (continued)
+
+### "502 Embedding service unavailable" on reindex or query
+
+- Ollama is not running. Start it with `ollama serve`.
+- The embedding model isn't pulled. Run `ollama pull nomic-embed-text`.
+- Check Ollama is reachable: `curl http://localhost:11434/api/tags`
+
+### Reindex returns all zeros
+
+- The project vault has no supported files. Upload files first or place `.md`/`.txt` files in the vault directory.
+- Hidden directories and `node_modules` are automatically skipped.
