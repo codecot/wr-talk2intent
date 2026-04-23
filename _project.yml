@@ -1,0 +1,14 @@
+slug: wr-talk2intent
+kind: web-app
+primary_language: typescript
+frameworks: [react, vite, tailwindcss, fastify, fastapi]
+runtimes: [node20, python3.10]
+external_services: [ollama, faster-whisper, sqlite]
+entry_points:
+  server_dev: "cd server && npm run dev"
+  ui_dev: "cd ui && npm run dev"
+  ui_build: "cd ui && npm run build"
+  asr_dev: "cd asr && uvicorn main:app --port 8001"
+deploy:
+  target: none
+  docs: "No deploy story; see PROJECT.md 'How to run locally'."
